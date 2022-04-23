@@ -10,7 +10,10 @@
 
 				l_1 - loader 
 
-				c_1 c_2 c_3 c_4 c_5 c_6 c_7 c_8 c_9 c_10 - crate
+				c_1 c_2 c_3 c_4 c_5 - crate
+				;c_6 c_7 c_8 c_9 c_10 - crate
+
+				A B - group
 
 	)
 
@@ -79,17 +82,36 @@
 
 		(free_bay)
 
+		(group c_1 A)
+		(group c_2 A)
+		(group c_3 B) 
+		(group c_4 B)
+
+		(not_grouped c_5)
+
+		(=(n_el A) 2)
+		(=(n_el B) 2)
+		(=(n_el_processed A) 0)
+		(=(n_el_processed B) 0)
+
+		(freetogroup)
+		(available A)
+		(available B)      
+
 	)
 
 	;;;;;;;
 
 	;; Goal
 
-	(:goal	(and (crate_at_bay  c_1)
-			(crate_at_bay  c_2)
-			(crate_at_bay  c_3)
-			(crate_at_bay c_4)
-			(crate_at_bay c_5)
+	(:goal	(and 
+			;(busygroup)
+			(pointed m_1 c_1)
+			;(crate_at_bay  c_1)
+			;(crate_at_bay  c_2)
+			;(crate_at_bay  c_3)
+			;(crate_at_bay c_4)
+			;(crate_at_bay c_5)
 			;;(crate_at_bay  c_6)
 			;;(crate_at_bay  c_7)
 			;;(crate_at_bay c_8)
