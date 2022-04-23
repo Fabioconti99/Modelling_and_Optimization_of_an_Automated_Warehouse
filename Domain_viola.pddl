@@ -14,15 +14,16 @@
 
    	(:predicates 
    		(loaded ?m - mover ?c - crate)
-        (pointed ?m -mover ?c -crate)
+        (pointed ?m - mover ?c - crate)
         (freetopoint ?m)
    		(different ?m1 - mover ?m2 - mover)
         (readytoload ?m ?c)
         (readytodrop ?m ?c)
    		(free_bay)
         (crate_at_bay ?c - crate)
-        (prova ?c - crate)
         (free_crate ?c - crate)
+        (loaded_light ?c - crate)
+        (co_loaded ?c - crate)
    	)
 
    	;;;;;;;;;;;;;;;;;;;;;;
@@ -76,9 +77,10 @@
     ; Action
 
 
-    (:action pointed 
+    (:action pointing 
   		:parameters (?c - crate ?m - mover)
-		:precondition (and (freetopoint ?m)(>(distance_crate ?c)0)(free_crate ?c))
+		:precondition (and (freetopoint ?m)(>(distance_crate ?c)0)(free_crate ?c)
+			)
 	
 		:effect (and  (pointed ?m ?c)
 			(not(freetopoint ?m)))
@@ -92,8 +94,10 @@
        )
 	
 		:effect (and  (loaded ?m ?c)(not(readytoload ?m ?c))
-            (assign(velocity ?m)(/ 150 (weight ?c)) )
-            (not(free_crate ?c)))
+            (assign(velocity ?m)(/ 100 (weight ?c)) )
+            (not(free_crate ?c))
+            (loaded_light ?c)
+            )
 			
   	)
 
@@ -105,9 +109,11 @@
                         )
 	
 		:effect (and  (loaded ?m1 ?c)(loaded ?m2 ?c)(not(readytoload ?m1 ?c))(not(readytoload ?m2 ?c))
-            (assign(velocity ?m1)(/ 100 (weight ?c)) )
-            (assign(velocity ?m2)(/ 100 (weight ?c) ))
-            (not(free_crate ?c)))
+            (assign(velocity ?m1)(/ 150 (weight ?c)) )
+            (assign(velocity ?m2)(/ 150 (weight ?c) ))
+            (not(free_crate ?c))
+            (co_loaded ?c)
+            )
 			
   	)
 
@@ -119,35 +125,39 @@
                         )
 	
 		:effect (and  (loaded ?m1 ?c)(loaded ?m2 ?c)(not(readytoload ?m1 ?c))(not(readytoload ?m2 ?c))
-            (assign(velocity ?m1)(/ 150 (weight ?c)) )
-            (assign(velocity ?m2)(/ 150 (weight ?c) ))
-            (not(free_crate ?c)))
+            (assign(velocity ?m1)(/ 100 (weight ?c)) )
+            (assign(velocity ?m2)(/ 100 (weight ?c) ))
+            (not(free_crate ?c))(co_loaded ?c)
+            )
 			
   	)
 
     (:action unloading
 
-        :parameters (?c - crate ?m1 - mover ?m2 - mover)
-		:precondition (and (readytodrop ?m1 ?c)
-            (not(readytodrop ?m2 ?c))
-            (different ?m1 ?m2)(free_bay))
+        :parameters (?c - crate ?m - mover); ?m2 - mover)
+		:precondition (and (readytodrop ?m ?c)(loaded_light ?c)
+            ;(not(readytodrop ?m2 ?c))
+            ;(different ?m1 ?m2)    		;; Levando sta roba l'elapsed time passa da 27 a 19
+            (free_bay))
 
-		:effect (and  (not(readytodrop ?m1 ?c))(crate_at_bay ?c)(freetopoint ?m1))
+		:effect (and  (not(readytodrop ?m ?c))(crate_at_bay ?c)(freetopoint ?m)
+
+			(assign(velocity ?m)10 )
+
+			)
     
     )
 
     (:action co_unloading
 
         :parameters (?c - crate ?m1 - mover ?m2 - mover)
-		:precondition (and (readytodrop ?m1 ?c)(readytodrop ?m2 ?c)(free_bay)(different ?m1 ?m2))
-		:effect (and  (not(readytodrop ?m1 ?c))(not(readytodrop ?m2 ?c))(freetopoint ?m1)(freetopoint ?m2)(crate_at_bay ?c) )
+		:precondition (and (readytodrop ?m1 ?c)(readytodrop ?m2 ?c)(free_bay)(different ?m1 ?m2)(co_loaded ?c))
+		:effect (and  (not(readytodrop ?m1 ?c))(not(readytodrop ?m2 ?c))(freetopoint ?m1)(freetopoint ?m2)(crate_at_bay ?c) 
+
+				(assign(velocity ?m1)10 )(assign(velocity ?m2)10 )
+
+			)
     )
-
-    
-
-
-
-
 
    	
 )
