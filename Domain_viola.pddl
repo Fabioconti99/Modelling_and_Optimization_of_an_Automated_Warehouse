@@ -33,6 +33,8 @@
 		(group ?c - crate ?g - group)
 		(processing ?g - group)
 		(not_grouped ?c - crate)
+		(no_active_groups)
+		(fragile ?c - crate)
 
 	)
 
@@ -47,6 +49,7 @@
 		(weight ?c - crate)
 		(n_el ?g - group)
 		(n_el_processed ?g - group)
+		(crate_taken ?c - crate)
 
 	)
 
@@ -94,7 +97,7 @@
 			(readytodrop ?m ?c))
 	)
 
-	(:event group_pointing
+	(:action group_pointing
 		:parameters (?c - crate ?m - mover ?g - group)
 		:precondition (and
 			(group ?c ?g)
@@ -104,20 +107,30 @@
 			(processing ?g)
 			(busygroup)
 			(<(n_el_processed ?g)(n_el ?g))
-			;(not_already_processed ?c)
+
+		)
+		:effect (and
+
+			(pointed ?m ?c)
+			(not(freetopoint ?m))
+
+			(increase(crate_taken ?c)1)
+
+		)
+	)
+
+	(:event increasing_n_els
+		:parameters (?g - group ?c - crate)
+		:precondition (and
+			(=(crate_taken ?c)1)
+			(processing ?g)
+			(group ?c ?g)
 		)
 
 		:effect (and
 			(increase (n_el_processed ?g) 1)
-			(pointed ?m ?c)
-			(not(freetopoint ?m))
 		)
 	)
-
-	; - fare tutto in una macroaction
-	; - bloccare il pointing normale quando sta facendo il group_pointing (che diventa una action)
-	;   - fare un event apposito che aumenta n_el_processed in modo opportuno 
-	;     (quindi considerando la crate e non il mover visto che un crate può essere puntato da due mover)
 
 	(:event stop_group_pointing
 		:parameters (?g - group)
@@ -131,120 +144,122 @@
 			(not(processing ?g))
 			(not (busygroup))
 			(freetogroup)
+			(no_active_groups)
 		)
 	)
 
 	; Action
 
 	(:action pointing
-		:parameters (?c - crate ?m - mover )
+		:parameters (?c - crate ?m - mover)
 		:precondition (and (freetopoint ?m)
 			(>(distance_crate ?c)0)
 			(free_crate ?c)
-			(not_grouped ?c))
+			(not_grouped ?c)
+			(no_active_groups)
+			)
 
-	:effect (and 
+		:effect (and
 			(pointed ?m ?c)
-		(not(freetopoint ?m))
+			(not(freetopoint ?m))
 		)
+	)
+
+	(:action pointing_group
+		:parameters (?g - group)
+		:precondition (and
+			(freetogroup)
+			(available ?g)
+		)
+
+		:effect (and
+			(not(freetogroup))
+			(busygroup)
+			(not (available ?g))
+			(processing ?g)
+			(not(no_active_groups))
+		)
+	)
+
+	(:action loading_light
+		:parameters (?c - crate ?m - mover)
+		:precondition (and (readytoload ?m ?c)
+			(<=(weight ?c)50)
+			(free_crate ?c)
+			(not(fragile ?c))
+
+		)
+
+		:effect (and (loaded ?m ?c)
+			(not(readytoload ?m ?c))
+			(assign(velocity ?m) (/ 100 (weight ?c)) )
+			(not(free_crate ?c))
+			(loaded_light ?c)
+		)
+
+	)
+
+	(:action co_loading_light
+		:parameters (?c - crate ?m1 - mover ?m2 - mover)
+		:precondition (and (readytoload ?m1 ?c)(readytoload ?m2 ?c)
+			(<=(weight ?c)50)
+			(different ?m1 ?m2)
+			(free_crate ?c)
+		)
+
+		:effect (and (loaded ?m1 ?c)(loaded ?m2 ?c)
+			(not(readytoload ?m1 ?c))
+			(not(readytoload ?m2 ?c))
+			(assign(velocity ?m1) (/ 150 (weight ?c)) )
+			(assign(velocity ?m2) (/ 150 (weight ?c)))
+			(not(free_crate ?c))
+			(co_loaded ?c)
+		)
+
+	)
+
+	(:action co_loading_heavy
+		:parameters (?c - crate ?m1 - mover ?m2 - mover)
+		:precondition (and (readytoload ?m1 ?c)(readytoload ?m2 ?c)
+			(>(weight ?c)50)
+			(different ?m1 ?m2)
+			(free_crate ?c)
+		)
+
+		:effect (and (loaded ?m1 ?c)(loaded ?m2 ?c)
+			(not(readytoload ?m1 ?c))
+			(not(readytoload ?m2 ?c))
+			(assign(velocity ?m1) (/ 100 (weight ?c)) )
+			(assign(velocity ?m2) (/ 100 (weight ?c)))
+			(not(free_crate ?c))(co_loaded ?c)
+		)
+
+	)
+
+	(:action unloading
+
+		:parameters (?c - crate ?m - mover)
+		:precondition (and (readytodrop ?m ?c)(loaded_light ?c)
+			(free_bay))
+
+		:effect (and (not(readytodrop ?m ?c))(crate_at_bay  ?c)(freetopoint ?m)
+
+			(assign(velocity ?m)10 )
+
+		)
+
+	)
+
+	(:action co_unloading
+
+		:parameters (?c - crate ?m1 - mover ?m2 - mover)
+		:precondition (and (readytodrop ?m1 ?c)(readytodrop ?m2 ?c)(free_bay)(different ?m1 ?m2)(co_loaded ?c))
+		:effect (and (not(readytodrop ?m1 ?c))
+			(not(readytodrop ?m2 ?c))(freetopoint ?m1)(freetopoint ?m2)(crate_at_bay ?c)
+
+			(assign(velocity ?m1)10 )
+			(assign(velocity ?m2)10 )
+
+		)
+	)
 )
-
-(:action pointing_group
-	:parameters (?g - group)
-	:precondition (and
-		(freetogroup)
-		(available ?g)
-	)
-
-	:effect (and
-		(not(freetogroup))
-		(busygroup)
-		(not (available ?g))
-		(processing ?g)
-	)
-)
-
-
-
-(:action loading_light
-	:parameters (?c - crate ?m - mover)
-	:precondition (and (readytoload ?m ?c)
-		(<=(weight ?c)50)
-		(free_crate ?c)
-
-	)
-
-	:effect (and (loaded ?m ?c)
-		(not(readytoload ?m ?c))
-		(assign(velocity ?m) (/ 100 (weight ?c)) )
-		(not(free_crate ?c))
-		(loaded_light ?c)
-	)
-
-)
-
-(:action co_loading_light
-	:parameters (?c - crate ?m1 - mover ?m2 - mover)
-	:precondition (and (readytoload ?m1 ?c)(readytoload ?m2 ?c)
-		(<=(weight ?c)50)
-		(different ?m1 ?m2)
-		(free_crate ?c)
-	)
-
-	:effect (and (loaded ?m1 ?c)(loaded ?m2 ?c)
-		(not(readytoload ?m1 ?c))
-		(not(readytoload ?m2 ?c))
-		(assign(velocity ?m1) (/ 150 (weight ?c)) )
-		(assign(velocity ?m2) (/ 150 (weight ?c)))
-		(not(free_crate ?c))
-		(co_loaded ?c)
-	)
-
-)
-
-(:action co_loading_heavy
-	:parameters (?c - crate ?m1 - mover ?m2 - mover)
-	:precondition (and (readytoload ?m1 ?c)(readytoload ?m2 ?c)
-		(>(weight ?c)50)
-		(different ?m1 ?m2)
-		(free_crate ?c)
-	)
-
-	:effect (and (loaded ?m1 ?c)(loaded ?m2 ?c)
-		(not(readytoload ?m1 ?c))
-		(not(readytoload ?m2 ?c))
-		(assign(velocity ?m1) (/ 100 (weight ?c)) )
-		(assign(velocity ?m2) (/ 100 (weight ?c)))
-		(not(free_crate ?c))(co_loaded ?c)
-	)
-
-)
-
-(:action unloading
-
-	:parameters (?c - crate ?m - mover); ?m2 - mover)
-	:precondition (and (readytodrop ?m ?c)(loaded_light ?c)
-		;(not(readytodrop ?m2 ?c))
-		;(different ?m1 ?m2)    		;; Levando sta roba l'elapsed time passa da 27 a 19
-		(free_bay))
-
-	:effect (and (not(readytodrop ?m ?c))(crate_at_bay ?c)(freetopoint ?m)
-
-		(assign(velocity ?m)10 )
-
-	)
-
-)
-
-(:action co_unloading
-
-	:parameters (?c - crate ?m1 - mover ?m2 - mover)
-	:precondition (and (readytodrop ?m1 ?c)(readytodrop ?m2 ?c)(free_bay)(different ?m1 ?m2)(co_loaded ?c))
-	:effect (and (not(readytodrop ?m1 ?c))
-		(not(readytodrop ?m2 ?c))(freetopoint ?m1)(freetopoint ?m2)(crate_at_bay ?c)
-
-		(assign(velocity ?m1)10 )
-		(assign(velocity ?m2)10 )
-
-	)
-))
