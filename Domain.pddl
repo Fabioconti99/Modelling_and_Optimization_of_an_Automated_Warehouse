@@ -17,10 +17,10 @@
 	(:predicates
 		(transporting ?m - mover ?c - crate)
 		(pointed ?m - mover ?c - crate)
-		(freetopoint ?m)
+		(freetopoint ?m - mover)
 		(different ?m1 - mover ?m2 - mover)
-		(readytotransport ?m ?c)
-		(readytodrop ?m ?c)
+		(readytotransport ?m - mover ?c - crate)
+		(readytodrop ?m - mover ?c - crate)
 		(crate_at_bay ?c - crate)
 		(free_crate ?c - crate)
 		(transported_light ?c - crate)
@@ -28,7 +28,7 @@
 
 		(freetogroup)
 		(busygroup)
-		(available ?g)
+		(available ?g - group)
 		(group ?c - crate ?g - group)
 		(processing ?g - group)
 		(not_grouped ?c - crate)
@@ -38,6 +38,7 @@
 		(can_drop_light)
 		(can_drop_heavy)
 		(free_bay)
+		
 		(different_loaders ?l1 - loader ?l2 - loader)
 		(free_loader ?l - loader)
 		(loading_on_belt ?l - loader ?c - crate)
@@ -49,6 +50,8 @@
 		(event_2)
 		(event_3)
 		(event_4)
+
+		(recharging ?m - mover)
 
 	)
 
@@ -65,6 +68,7 @@
 		(n_el_processed ?g - group)
 		(crate_taken ?c - crate)
 		(time_loader ?l - loader)
+		(battery ?m - mover)
 
 	)
 
@@ -74,22 +78,20 @@
 
 	(:process move_to_crate
 		:parameters (?m - mover ?c - crate)
-		:precondition (and (pointed ?m ?c))
-		:effect (increase
-			(distance_mover ?m)
-			(* #t (velocity ?m)))
+		:precondition (and (pointed ?m ?c)(>(battery ?m)0))
+		:effect (and
+			(increase (distance_mover ?m)(* #t (velocity ?m)))
+			(decrease(battery ?m)#t)
+			)
+			
 	)
 
 	(:process move_to_bay
 		:parameters (?m - mover ?c - crate)
-		:precondition (and (transporting ?m ?c))
-		:effect (and (decrease
-				(distance_mover ?m)
-				(* #t (velocity ?m)))
-			;(decrease
-			;	(distance_crate ?c)
-			;	(* #t (velocity ?m)))
-		)
+		:precondition (and (transporting ?m ?c)(>(battery ?m)0))
+		:effect (and (decrease(distance_mover ?m)(* #t (velocity ?m)))
+				(decrease(battery ?m)#t)
+				)
 	)
 
 	(:process loader_at_work
@@ -100,6 +102,15 @@
 		)
 	)
 
+	(:process recharge
+		:parameters (?m - mover)
+		:precondition (and (recharging ?m)
+							)
+		:effect (and (increase (battery ?m) #t)
+			)
+	)
+
+
 	;;;;;;;;;;;;
 
 	;Events
@@ -109,17 +120,20 @@
 		:precondition (and (>=(distance_mover ?m)(distance_crate ?c))(pointed ?m ?c))
 
 		:effect (and (not(pointed ?m ?c))
-			(readytotransport ?m ?c))
+			(readytotransport ?m ?c)
+			(assign(distance_mover ?m)(distance_crate ?c))
+			)
 	)
 	(:event at_bay
 		:parameters (?c - crate ?m - mover)
 		:precondition (and 
 			(<=(distance_mover ?m)0)
-			;(<(distance_crate ?c)0)
 			(transporting ?m ?c))
 
 		:effect (and (not(transporting ?m ?c))
-			(readytodrop ?m ?c))
+			(readytodrop ?m ?c)
+			(assign(distance_mover ?m)0)
+			)
 	)
 
 
@@ -154,12 +168,12 @@
 			(busygroup)
 			(<(n_el_processed ?g)(n_el ?g))
 
+
 		)
 		:effect (and
 
 			(pointed ?m ?c)
 			(not(freetopoint ?m))
-
 			(increase(crate_taken ?c)1)
 
 		)
@@ -226,11 +240,11 @@
 		:precondition (and
 			(not(cheap ?l1))
 			(cheap ?l2)
-
+			(different_loaders ?l1 ?l2)
 			(free_loader ?l1)
 			(not(free_loader ?l2))
 
-			(different_loaders ?l1 ?l2)
+			
 
 			(event_2)
 		)
@@ -251,11 +265,11 @@
 		:precondition (and
 			(cheap ?l2)
 			(not(cheap ?l1))
-
+			(different_loaders ?l1 ?l2)
 			(not(free_loader ?l1))
 			(free_loader ?l2)
 
-			(different_loaders ?l1 ?l2)
+			
 
 			(event_3)
 		)
@@ -275,11 +289,11 @@
 		:precondition (and
 			(not(free_loader ?l1))
 			(not(free_loader ?l2))
-
+			(different_loaders ?l1 ?l2)
 			(not(cheap ?l1))
 			(cheap ?l2)
 
-			(different_loaders ?l1 ?l2)
+			
 
 			(event_4)
 		)
@@ -313,6 +327,18 @@
 			(pointed ?m ?c)
 			(not(freetopoint ?m))
 		)
+	)
+
+	(:action stop_recharging
+
+		:parameters(?c - crate ?m - mover)
+
+		:precondition(and (recharging ?m)(pointed ?m ?c))
+
+		:effect (and (not(recharging ?m)))
+
+
+
 	)
 
 	(:action pointing_group
@@ -469,7 +495,7 @@
 	)
 
 
-	(:event activate_loader_cheap
+	(:action activate_loader_cheap
 
 		:parameters (?c - crate ?l - loader)
 		:precondition (and 
@@ -491,7 +517,7 @@
 
 
 
-	(:event activate_loader_fragile_normal
+	(:action activate_loader_fragile_normal
 
 		:parameters (?c - crate ?l - loader)
 		:precondition (and 
@@ -510,7 +536,7 @@
 		)
 	)
 
-	(:event activate_loader_fragile_cheep
+	(:action activate_loader_fragile_cheap
 
 		:parameters (?c - crate ?l - loader)
 		:precondition (and 
@@ -528,6 +554,18 @@
 			(assign(time_loader ?l)6)
 			(free_bay)
 		)
+	)
+
+	(:action start_recharge
+
+		:parameters (?m1 - mover ?m2 - mover)
+
+		:precondition (and (<= (distance_mover ?m1) 0)
+			(not(recharging ?m1))
+			(different ?m1 ?m2)
+			(< (battery ?m1) 20)
+			)
+		:effect(and (recharging ?m1))
 	)
 
 )

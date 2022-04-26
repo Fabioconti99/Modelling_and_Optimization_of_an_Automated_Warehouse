@@ -80,7 +80,13 @@
 	(event_1)
 	(free_bay)
 
+;; Battery
+
+	(=(battery m_1)20)
+	(=(battery m_2)20)
+
 	)
+
 
 	;;;;;;;
 
