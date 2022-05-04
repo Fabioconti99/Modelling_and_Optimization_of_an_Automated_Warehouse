@@ -91,7 +91,7 @@
 		:precondition (and (transporting ?m ?c)(>(battery ?m)0))
 		:effect (and (decrease(distance_mover ?m)(* #t (velocity ?m)))
 				(decrease(battery ?m)#t)
-				)
+			)
 	)
 
 	(:process loader_at_work
@@ -104,16 +104,17 @@
 
 	(:process recharge
 		:parameters (?m - mover)
-		:precondition (and (recharging ?m)
+		:precondition (and (<= (distance_mover ?m) 0)(< (battery ?m) 20)
 							)
 		:effect (and (increase (battery ?m) #t)
-			)
+		)
 	)
 
 
 	;;;;;;;;;;;;
 
 	;Events
+
 
 	(:event at_crate
 		:parameters (?c - crate ?m - mover)
@@ -167,9 +168,8 @@
 			(processing ?g)
 			(busygroup)
 			(<(n_el_processed ?g)(n_el ?g))
-
-
 		)
+
 		:effect (and
 
 			(pointed ?m ?c)
@@ -223,7 +223,6 @@
 			(different_loaders ?l1 ?l2)
 			(event_1)
 		)
-
 		:effect (and
 			(can_drop_light)
 			(can_drop_heavy)
@@ -243,9 +242,6 @@
 			(different_loaders ?l1 ?l2)
 			(free_loader ?l1)
 			(not(free_loader ?l2))
-
-			
-
 			(event_2)
 		)
 
@@ -268,9 +264,6 @@
 			(different_loaders ?l1 ?l2)
 			(not(free_loader ?l1))
 			(free_loader ?l2)
-
-			
-
 			(event_3)
 		)
 		:effect (and
@@ -329,17 +322,18 @@
 		)
 	)
 
-	(:action stop_recharging
+	;(:event stop_recharging
 
-		:parameters(?c - crate ?m - mover)
+		;:parameters(?c - crate ?m - mover)
 
-		:precondition(and (recharging ?m)(pointed ?m ?c))
+		;:precondition(and ;(recharging ?m)
+			;(>=(battery ?m)20))
 
-		:effect (and (not(recharging ?m)))
+		;:effect (and (not(recharging ?m)))
 
 
 
-	)
+	;)
 
 	(:action pointing_group
 		:parameters (?g - group)
@@ -556,16 +550,16 @@
 		)
 	)
 
-	(:action start_recharge
+;action start_recharge
 
-		:parameters (?m1 - mover ?m2 - mover)
+		;:parameters (?m1 - mover ?m2 - mover)
 
-		:precondition (and (<= (distance_mover ?m1) 0)
-			(not(recharging ?m1))
-			(different ?m1 ?m2)
-			(< (battery ?m1) 20)
-			)
-		:effect(and (recharging ?m1))
-	)
+		;:precondition (and (<= (distance_mover ?m1) 0)
+			;(not(recharging ?m1))
+			;(different ?m1 ?m2)
+			;(< (battery ?m1) 20)
+			;)
+		;:effect(and (recharging ?m1))
+	;)
 
 )

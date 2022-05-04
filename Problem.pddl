@@ -30,16 +30,16 @@
 		(= (velocity m_1) 10)
 		(= (velocity m_2) 10)
 
-		(= (distance_crate c_1) 15)
+		(= (distance_crate c_1) 10)
 		(= (weight c_1) 30)
 		
 
-		(= (distance_crate c_2) 15)
+		(= (distance_crate c_2) 20)
 		(= (weight c_2) 20)
 	
 	
-		(= (distance_crate c_3)25)
-		(= (weight c_3) 25)
+		(= (distance_crate c_3)15)
+		(= (weight c_3) 55)
 
 		(= (distance_crate c_4) 20)
 		(= (weight c_4) 55)
@@ -90,21 +90,21 @@
 		(no_active_groups) 
 		 
 
-;;		(available A) (=(n_el A) 2) (=(n_el_processed A) 0)
-;;		(available B) (=(n_el B) 2) (=(n_el_processed B) 0)
+		(available A) (=(n_el A) 2) (=(n_el_processed A) 0)
+		(available B) (=(n_el B) 2) (=(n_el_processed B) 0)
 		
 
 
 ;; crate in groups OR not in groups
-;;		(group c_1 A)   (=(crate_taken c_1) 0)
-		(not_grouped c_1)
-		;;		(group c_2 A)   (=(crate_taken c_2) 0)
-		(not_grouped c_2)
-;;		(group c_3 B)   (=(crate_taken c_3) 0) 
-		(not_grouped c_3)
-;;		(group c_4 B)   (=(crate_taken c_4) 0)
-		(not_grouped c_4)
-;;		(group c_5 A)   (=(crate_taken c_5) 0)
+		(group c_1 A)   (=(crate_taken c_1) 0)
+		;(not_grouped c_1)
+		(group c_2 A)   (=(crate_taken c_2) 0)
+		;(not_grouped c_2)
+		(group c_3 B)   (=(crate_taken c_3) 0) 
+		;(not_grouped c_3)
+		(group c_4 B)   (=(crate_taken c_4) 0)
+		;(not_grouped c_4)
+		;(group c_5 A)   (=(crate_taken c_5) 0)
 		(not_grouped c_5)
 
 		
@@ -113,7 +113,7 @@
 
 ;; FRAGILE SETTINGS
 ;;		(fragile c_1)
-;;		(fragile c_2) 
+		(fragile c_2) 
 ;		(fragile c_3)
 ;;		(fragile c_4)
 ;;		(fragile c_5)  
@@ -133,6 +133,12 @@
 
 	(event_1)
 	(free_bay)
+
+
+	;; Battery
+
+	(=(battery m_1)0)
+	(=(battery m_2)0)
 
 	)
 
