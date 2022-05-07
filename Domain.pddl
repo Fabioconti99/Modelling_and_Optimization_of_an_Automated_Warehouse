@@ -1,10 +1,10 @@
 ;;;;;;;;;;;;;;;;; ARTIFICIAL INTELLIGENCE FOR ROBOTICS 2 ASSIGNMENT ;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;					A.A. 2021/2022 					;;;;;;;;;;;;;;;;;;;;;;;;
-;;;	The following code has been developed by:											 ;;;
-;;;		- Matteo Carlone (S4652067)														 ;;;
-;;;		- Fabio Conti (S4693053)														 ;;;
-;;;		- Alessandro Perri (S4476726)													 ;;;
-;;;		- Luca Predieri (S4667708)														 ;;;
+;;;;;;;;;;;;;;;;;                 A.A. 2021/2022                    ;;;;;;;;;;;;;;;;;;;;;;;;
+;;; The following code has been developed by:                                            ;;;
+;;;     - Matteo Carlone (S4652067)                                                      ;;;
+;;;     - Fabio Conti (S4693053)                                                         ;;;
+;;;     - Alessandro Perri (S4476726)                                                    ;;;
+;;;     - Luca Predieri (S4667708)                                                       ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (domain Warehouse_D)
