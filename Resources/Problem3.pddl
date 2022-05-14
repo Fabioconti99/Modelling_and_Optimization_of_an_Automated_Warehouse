@@ -1,7 +1,7 @@
 ;;;;;;;;;;;;;;;;; ARTIFICIAL INTELLIGENCE FOR ROBOTICS 2 ASSIGNMENT ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;                 A.A. 2021/2022                    ;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PROBLEM 2 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PROBLEM 3 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define 
 	(problem Warehouse_P)
@@ -9,11 +9,11 @@
 
 	;; Objects
 
-	(:objects 
-                m_1 m_2 - mover
+	(:objects m_1 m_2 - mover
+
 				l_1 l_2 - loader 
 				c_1 c_2 c_3 c_4 - crate
-				A B - group
+				A - group
 
 	)
 
@@ -29,7 +29,7 @@
 		(= (velocity m_1) 10)
 		(= (velocity m_2) 10)
 
-		(= (distance_crate c_1) 10)
+		(= (distance_crate c_1) 20)
 		(= (weight c_1) 70)
 		
 
@@ -37,8 +37,8 @@
 		(= (weight c_2) 80)
         (fragile c_2)
 	
-		(= (distance_crate c_3)20)
-		(= (weight c_3) 20)
+		(= (distance_crate c_3)30)
+		(= (weight c_3) 60)
 
         (= (distance_crate c_4)10)
 		(= (weight c_4) 30)
@@ -63,8 +63,7 @@
 		(no_active_groups) 
 		 
 
-		(available A) (=(n_el A) 2) (=(n_el_processed A) 0)
-        (available B) (=(n_el B) 2) (=(n_el_processed B) 0)
+		(available A) (=(n_el A) 3) (=(n_el_processed A) 0)
 	
 
 
@@ -72,9 +71,9 @@
 
 		(group c_1 A)   (=(crate_taken c_1) 0)
 		(group c_2 A)   (=(crate_taken c_2) 0)
-		(group c_3 B)   (=(crate_taken c_3) 0)
-        (group c_4 B)   (=(crate_taken c_4) 0) 
+		(group c_3 A)   (=(crate_taken c_3) 0) 
 
+        (not_grouped c_4)
 
 
 ;; LOADER SETTINGS
@@ -89,6 +88,15 @@
 	(event_1)
 	(free_bay)
 
+	)
+
+	;;;;;;;
+
+;; Battery
+
+	(=(battery m_1)20)
+	(=(battery m_2)20)
+	
 	)
 
 	;;;;;;;
