@@ -3,6 +3,9 @@ Assignment for the Artificial Intelligence for Robotics 2 class at _ROBOTICS ENG
 
 The requirements of the assignment, given by prof. **Mauro Vallati**, are in the following [pdf file](https://github.com/LucaPredieri/AIRo2_Assignment1/blob/main/Assignment.pdf). 
 
+Documentation about the project [here](https://github.com/LucaPredieri/AIRo2_Assignment1/blob/main/Report.pdf)
+
+
 The code which is **PDDL+** was developed by:
 
 | Group CPx2 |
